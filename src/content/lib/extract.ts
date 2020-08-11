@@ -21,6 +21,12 @@ const ARTICLE_TAG_WEIGHTS: { [Selector: string]: number[] } = {
   h4: [0, 100, 60, 40, 30, 25, 22, 18].map((s) => s * 0.5 * 0.5),
   h5: [0, 100, 60, 40, 30, 25, 22, 18].map((s) => s * 0.5 * 0.5 * 0.5),
   h6: [0, 100, 60, 40, 30, 25, 22, 18].map((s) => s * 0.5 * 0.5 * 0.5 * 0.5),
+  'div[placeholder="Heading 1"]': [0, 100, 60, 40, 30, 25, 22, 18].map((s) => s * 0.4),
+  'div[placeholder="Heading 2"]': [0, 100, 60, 40, 30, 25, 22, 18],
+  'div[placeholder="Heading 3"]': [0, 100, 60, 40, 30, 25, 22, 18].map((s) => s * 0.5),
+  'div[placeholder="Heading 4"]': [0, 100, 60, 40, 30, 25, 22, 18].map((s) => s * 0.5 * 0.5),
+  'div[placeholder="Heading 5"]': [0, 100, 60, 40, 30, 25, 22, 18].map((s) => s * 0.5 * 0.5 * 0.5),
+  'div[placeholder="Heading 6"]': [0, 100, 60, 40, 30, 25, 22, 18].map((s) => s * 0.5 * 0.5 * 0.5 * 0.5),
   strong: [0, 100, 60, 40, 30, 25, 22, 18].map((s) => s * 0.5 * 0.5 * 0.5),
   article: [500],
   '.article': [500],
@@ -154,6 +160,12 @@ const HEADING_TAG_WEIGHTS = {
   H5: 10,
   H6: 10,
   STRONG: 5,
+  'div[placeholder="Heading 1"]': 5,
+  'div[placeholder="Heading 2"]': 9,
+  'div[placeholder="Heading 3"]': 9,
+  'div[placeholder="Heading 4"]': 10,
+  'div[placeholder="Heading 5"]': 10,
+  'div[placeholder="Heading 6"]': 10,
 }
 export const extractHeadings = (articleDom: HTMLElement): Heading[] => {
   const isVisible = (elem: HTMLElement) => elem.offsetHeight !== 0
@@ -171,7 +183,7 @@ export const extractHeadings = (articleDom: HTMLElement): Heading[] => {
     .map(
       (tag): HeadingGroup => {
         let elems = toArray(
-          articleDom.getElementsByTagName(tag),
+          articleDom.querySelectorAll(tag),
         ) as HTMLElement[]
         if (tag.toLowerCase() === 'strong') {
           // for <strong> elements, only take them as heading when they align at left
@@ -198,7 +210,7 @@ export const extractHeadings = (articleDom: HTMLElement): Heading[] => {
   // use document sequence
   const headingTags = headingTagGroups.map((headings) => headings.tag)
   const acceptNode = (node: HTMLElement) => {
-    const group = headingTagGroups.find((g) => g.tag === node.tagName)
+    const group = headingTagGroups.find((g) => node.matches(g.tag))
     if (!group) {
       return NodeFilter.FILTER_SKIP
     }
@@ -226,7 +238,7 @@ export const extractHeadings = (articleDom: HTMLElement): Heading[] => {
     headings.push({
       dom,
       text: dom.textContent || '',
-      level: headingTags.indexOf(dom.tagName) + 1,
+      level: headingTags.findIndex((el) => dom.matches(el)) + 1,
       id,
       anchor,
     })
